@@ -50,7 +50,7 @@
         headers = lines[0].split(',');
         lines.forEach(function(line, index) {
             var row = table.insertRow();
-            console.log(row, index);
+            //console.log(row, index);
             line.split(',').forEach(function(cell, cellIndex) {
                 var cellElement = document.createElement(index === 0 ? 'th' : 'td');
                 cellElement.textContent = cell;
@@ -93,6 +93,43 @@
             }
             row.style.display = visible ? '' : 'none';
         }
+    }
+
+    function filterAndSave(){
+
+        var table = document.getElementById('csvTable');
+
+        // Convert sorted table back to CSV and display it
+        var csvContent = Array.from(table.rows).map(function(row) {
+            return Array.from(row.cells).map(function(cell) {
+                return cell.textContent;
+            }).join(',');
+        }).join('\n');
+
+
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals'
+        var filteredCsvContent = csvContent.split('\n').filter(function(line) {
+            //return line.includes('Analytic Fundamentals') && parseInt(line.split(',')[2]) > 130;
+            return line.includes('Analytic Fundamentals');
+        }).join('\n');
+
+        // Create a blob from the filtered CSV content
+        var blob = new Blob([filteredCsvContent], { type: 'text/csv' });
+        
+        // Create a link element to trigger the download
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'high_assessment_scores.csv';
+
+        // Append link to the document body
+        document.body.appendChild(link);
+
+        // Trigger the download
+        link.click();
+
+        // Clean up: Remove the link from the document body
+        document.body.removeChild(link);
+
     }
 
     /*
