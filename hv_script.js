@@ -69,36 +69,39 @@
     }
 
     function sortAndSave() {
-        var sortIndex = document.getElementById('sortColumn').value;
-        var table = document.getElementById('csvTable');
-        var rows = Array.from(table.rows).slice(1); // Exclude header row
-        rows.sort(function(a, b) {
-            var aVal = a.cells[sortIndex].textContent;
-            var bVal = b.cells[sortIndex].textContent;
-            return aVal.localeCompare(bVal);
-        });
-        
-        // Reorder table rows
-        table.innerHTML = ''; // Clear existing table
-        rows.forEach(function(row) {
-            table.appendChild(row);
-        });
+    var sortIndex = document.getElementById('sortColumn').value;
+    var table = document.getElementById('csvTable');
+    var rows = Array.from(table.rows).slice(1); // Exclude header row
+    rows.sort(function(a, b) {
+        var aVal = a.cells[sortIndex].textContent;
+        var bVal = b.cells[sortIndex].textContent;
+        return aVal.localeCompare(bVal);
+    });
+    
+    // Reorder table rows
+    table.innerHTML = ''; // Clear existing table
+    rows.forEach(function(row) {
+        table.appendChild(row);
+    });
 
-        // Convert sorted table back to CSV and display it
-        var csvContent = Array.from(table.rows).map(function(row) {
-            return Array.from(row.cells).map(function(cell) {
-                return cell.textContent;
-            }).join(',');
-        }).join('\n');
-        
-        alert("Sorted Data:\n\n" + csvContent);
+    // Convert sorted table back to CSV and display it
+    var csvContent = Array.from(table.rows).map(function(row) {
+        return Array.from(row.cells).map(function(cell) {
+            return cell.textContent;
+        }).join(',');
+    }).join('\n');
+    
+    // Filter on 'Assessment Name' == 'Analytic Fundamentals'
+    var filteredCsvContent = csvContent.split('\n').filter(function(line) {
+        return line.includes('Analytic Fundamentals') && parseInt(line.split(',')[2]) > 130;
+    }).join('\n');
+    
+    // Create a blob from the filtered CSV content
+    var blob = new Blob([filteredCsvContent], { type: 'text/csv' });
 
-        // Create a blob from the CSV content
-        var blob = new Blob([csvContent], { type: 'text/csv' });
-
-        // Create a link element to trigger the download
-        var link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = 'sorted_data.csv';
-        link.click();
-    }
+    // Create a link element to trigger the download
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'high_assessment_scores.csv';
+    link.click();
+}
