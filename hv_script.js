@@ -43,19 +43,19 @@
         
         var lines = csv.split('\n');
         var table = document.getElementById('csvTable');
-        var sortSelect = document.getElementById('sortColumn');
-        var filtersDiv = document.getElementById('filters');
+        
         table.innerHTML = ''; // Clear existing table
-        sortSelect.innerHTML = ''; // Clear existing select options
-        filtersDiv.innerHTML = ''; // Clear existing filters
         
         // take the first element of the lines array (which is the first row of the csv) and split by comma, breaking out the headers
         headers = lines[0].split(',');
         lines.forEach(function(line, index) {
             var row = table.insertRow();
+            console.log(row, index);
             line.split(',').forEach(function(cell, cellIndex) {
                 var cellElement = document.createElement(index === 0 ? 'th' : 'td');
                 cellElement.textContent = cell;
+                
+                /* I don't need the sorting or filtering functionality atm
                 if (index === 0) {
                     var option = document.createElement('option');
                     option.text = cell;
@@ -68,7 +68,7 @@
                     filterInput.setAttribute('data-index', cellIndex);
                     filterInput.addEventListener('input', applyFilters);
                     filtersDiv.appendChild(filterInput);
-                }
+                } */
                 row.appendChild(cellElement);
             });
         });
@@ -95,6 +95,7 @@
         }
     }
 
+    /*
     function sortAndSave() {
         var sortIndex = document.getElementById('sortColumn').value;
         var table = document.getElementById('csvTable');
@@ -131,4 +132,4 @@
         link.href = window.URL.createObjectURL(blob);
         link.download = 'high_assessment_scores.csv';
         link.click();
-    }
+    }*/
