@@ -11,9 +11,11 @@
         //Inside the event listener function, this line retrieves the selected file from the event object (e). 
         //The files property of the file input element contains an array of selected files, and [0] selects the first file in the array.
         var file = e.target.files[0];
+        console.log('csv file input debug');
         
         // if there is no file, break
         if (!file) {
+            console.log("No file");
             return;
         }
         
@@ -28,7 +30,39 @@
             var contents = e.target.result;
             
             // call displayCSV method on the contents (csv text in this case)
-            displayCSV(contents);
+            displayCSV(contents,'csvTable');
+        };
+        //This line initiates reading the selected file as text using the readAsText() method of the FileReader object. 
+        //This asynchronous operation triggers the load event once the file content has been read successfully.
+        reader.readAsText(file);
+    });
+
+    // add event listener to the csvFileInput element which is the input button
+    document.getElementById('coursesCsvFileInput').addEventListener('change', function(e) {
+        
+        //Inside the event listener function, this line retrieves the selected file from the event object (e). 
+        //The files property of the file input element contains an array of selected files, and [0] selects the first file in the array.
+        var file = e.target.files[0];
+        console.log('csv file input debug');
+        
+        // if there is no file, break
+        if (!file) {
+            console.log("No file");
+            return;
+        }
+        
+        // create a new FileReader object
+        // FileReader is a built in js object that allows for reading files async
+        var reader = new FileReader();
+        
+        //This line sets up an event handler for when the file has been successfully loaded. 
+        //It defines a function to be executed when the load event occurs, which happens when the file content is fully loaded.
+        reader.onload = function(e) {
+            //The result property of the FileReader object contains the file content as a data URL or text, depending on how the file was read.
+            var contents = e.target.result;
+            
+            // call displayCSV method on the contents (csv text in this case)
+            displayCSV(contents,"programsCsvTable");
         };
         //This line initiates reading the selected file as text using the readAsText() method of the FileReader object. 
         //This asynchronous operation triggers the load event once the file content has been read successfully.
@@ -39,10 +73,10 @@
     function to parse and display the csv data on the page 
     Also gets header information so it can be used for sorting and filtering
     */
-    function displayCSV(csv) {
+    function displayCSV(csv, elementID) {
         
         var lines = csv.split('\n');
-        var table = document.getElementById('csvTable');
+        var table = document.getElementById(elementID);
         
         table.innerHTML = ''; // Clear existing table
         
@@ -95,14 +129,13 @@
         }
     }
 
-    function filterAndSave(){
-
+    function filterAndSave() {
         var table = document.getElementById('csvTable');
 
         // Extract the header row
-        var headerRow = Array.from(table.rows[0].cells).map(function(cell){
+        var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
             return cell.textContent;
-        })
+        }).join(',');
 
         // Convert sorted table back to CSV and display it
         var csvContent = Array.from(table.rows).map(function(row) {
@@ -111,26 +144,27 @@
             }).join(',');
         }).join('\n');
 
-
-        // Filter on 'Assessment Name' == 'Analytic Fundamentals'
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals' and 'Reported Score' >= 130
         var filteredCsvContent = csvContent.split('\n').filter(function(line, index) {
-            //return line.includes('Analytic Fundamentals') && parseInt(line.split(',')[2]) > 130;
-            // skip header row
-            console.log(index);
-            if (index === 0) return true;
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
+
+            // Skip header row
+            if (index === 0) return false;
 
             var values = line.split(',');
-            var assessmentName = values[3];
-            var reportedScore = parseInt(values[7]);
-            return assessmentName.includes('Analytic Fundamentals') && reportedScore >= 130;
+            console.log(values);
+            var assessmentName = values[3].trim(); // Assuming 'Assessment Name' is the fourth column
+            var reportedScore = parseInt(values[7]); // Assuming 'Reported Score' is the eighth column
+            return assessmentName === 'Analytic Fundamentals' && reportedScore >= 130;
         }).join('\n');
 
         var finalCsvContent = headerRow + '\n' + filteredCsvContent;
-        
 
         // Create a blob from the filtered CSV content
         var blob = new Blob([finalCsvContent], { type: 'text/csv' });
-        
+
         // Create a link element to trigger the download
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
@@ -144,8 +178,72 @@
 
         // Clean up: Remove the link from the document body
         document.body.removeChild(link);
-
     }
+
+    function parsePrograms(){
+        var table = document.getElementById('programsCsvTable');
+
+        // Extract the header row
+        /*
+        var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
+            return cell.textContent;
+        }).join(',');
+        */
+
+         // Extract data from the HTML table
+        var data = Array.from(table.rows).map(function(row) {
+            return Array.from(row.cells).map(function(cell) {
+                return cell.textContent;
+            });
+        });
+
+        // Convert data to DataFrame (assuming the structure is consistent with the DataFrame)
+        var df = {
+            'CourseName': data.map(function(row) { return row[8]; }), // Assuming the first column contains 'CourseName'
+            // Add more columns if necessary
+        };
+
+        // Filter courses for Deckhand
+        var dhDataCourses = df.CourseName.filter(function(course) {
+            return course === 'Introduction to Data Literacy';
+        });
+        var dhCustomCourses = df.CourseName.filter(function(course) {
+            return course !== 'Introduction to Data Literacy';
+        });
+
+        // Filter courses for Bosun
+        var bosunDataCourses = df.CourseName.filter(function(course) {
+            return course === 'Data Science for Business';
+        });
+        var bosunCustomCourses = df.CourseName.filter(function(course) {
+            return course !== 'Data Science for Business';
+        });
+        var bosunGovernanceCourses = df.CourseName.filter(function(course) {
+            return course === 'Data Governance Concepts';
+        });
+
+        // Output filtered courses to CSV files
+        var dhDataCourseOutput = 'Deckhand Data Courses.csv';
+        var dhCustomCourseOutput = 'Deckhand Custom Courses.csv';
+        var bosunDataCourseOutput = 'Bosun Data Courses.csv';
+        var bosunCustomCourseOutput = 'Bosun Custom Courses.csv';
+        var bosunGovernanceCourseOutput = 'Bosun Data Governance Courses.csv';
+
+        // Function to save CSV file (dummy implementation)
+        function saveCSV(filename, data) {
+            // Dummy implementation - Replace with actual code to save CSV file
+            console.log('Saving file:', filename);
+            console.log('Data:', data);
+        }
+
+        // Save filtered courses to CSV files
+        saveCSV(dhDataCourseOutput, dhDataCourses);
+        saveCSV(dhCustomCourseOutput, dhCustomCourses);
+        saveCSV(bosunDataCourseOutput, bosunDataCourses);
+        saveCSV(bosunCustomCourseOutput, bosunCustomCourses);
+        saveCSV(bosunGovernanceCourseOutput, bosunGovernanceCourses);
+    }
+
 
     /*
     function sortAndSave() {

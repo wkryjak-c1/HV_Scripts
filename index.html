@@ -52,16 +52,32 @@
 
 <div id="container">
     <h2>CSV File Viewer, Sorter, and Filter and More</h2>
+    <h3>High Scores Filter</h3>
+    <p>Click the button and choose the Datacamp Assessments csv file</p>
     <!-- specific input button for csv files -->
     <input type="file" id="csvFileInput" accept=".csv">
-    <a href="#filterButton">Go to Filter</a>
+    <a href="#assessmentFilterButton">Go to Export</a>
     
     <!-- element for table which will be displayed (if we want) -->
     <table id="csvTable"></table>
         
     <!-- button that sorts? and then exports the file for the user -->
 
-    <button id="filterButton" onclick="filterAndSave()">Filter and Save</button>
+    <button id="assessmentFilterButton" onclick="filterAndSave()">Export High Assessment Scores</button>
+
+
+    <h3>Parse Programs</h3>
+    <p>Click the button and choose the Datacamp Course Data csv file</p>
+    <!-- specific input button for csv files -->
+    <input type="file" id="coursesCsvFileInput" accept=".csv">
+    <a href="#courseFilterButton">Go to Export</a>
+    
+    <!-- element for table which will be displayed (if we want) -->
+    <table id="programsCsvTable"></table>
+        
+    <!-- button that sorts? and then exports the file for the user -->
+
+    <button id="courseFilterButton" onclick="parsePrograms()">Export Parsed Courses</button>
 </div>
 
 <script src="hv_script.js">
