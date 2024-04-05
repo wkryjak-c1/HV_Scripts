@@ -120,8 +120,8 @@
             if (index === 0) return true;
 
             var values = line.split(',');
-            var assessment_name = values[3];
-            var reported_score = parseInt(values[7]);
+            var assessmentName = values[3];
+            var reportedScore = parseInt(values[7]);
             return assessmentName.includes('Analytic Fundamentals') && reportedScore >= 130;
         }).join('\n');
 
