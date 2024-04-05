@@ -108,6 +108,7 @@
         });
     }
 
+    /*
     function applyFilters() {
         var filterInputs = document.querySelectorAll('#filters input');
         var table = document.getElementById('csvTable');
@@ -127,7 +128,7 @@
             }
             row.style.display = visible ? '' : 'none';
         }
-    }
+    }*/
 
     function filterAndSave() {
         var table = document.getElementById('csvTable');
@@ -184,43 +185,96 @@
         var table = document.getElementById('programsCsvTable');
 
         // Extract the header row
-        /*
         var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
             return cell.textContent;
         }).join(',');
-        */
 
-         // Extract data from the HTML table
-        var data = Array.from(table.rows).map(function(row) {
+        // Convert sorted table back to CSV and display it
+        var csvContent = Array.from(table.rows).map(function(row) {
             return Array.from(row.cells).map(function(cell) {
                 return cell.textContent;
-            });
-        });
+            }).join(',');
+        }).join('\n');
 
-        // Convert data to DataFrame (assuming the structure is consistent with the DataFrame)
-        var df = {
-            'CourseName': data.map(function(row) { return row[8]; }), // Assuming the first column contains 'CourseName'
-            // Add more columns if necessary
-        };
 
-        // Filter courses for Deckhand
-        var dhDataCourses = df.CourseName.filter(function(course) {
-            return course === 'Introduction to Data Literacy';
-        });
-        var dhCustomCourses = df.CourseName.filter(function(course) {
-            return course !== 'Introduction to Data Literacy';
-        });
+        // Filter on 'Assessment Name' == 'Intro to data literacy'
+        var dhDataCourses = csvContent.split('\n').filter(function(line, index) {
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
 
-        // Filter courses for Bosun
-        var bosunDataCourses = df.CourseName.filter(function(course) {
-            return course === 'Data Science for Business';
-        });
-        var bosunCustomCourses = df.CourseName.filter(function(course) {
-            return course !== 'Data Science for Business';
-        });
-        var bosunGovernanceCourses = df.CourseName.filter(function(course) {
-            return course === 'Data Governance Concepts';
-        });
+            // Skip header row
+            if (index === 0) return false;
+
+            var values = line.split(',');
+            console.log(values);
+            var assessmentName = values[8].trim(); // Assuming 'Assessment Name' is the fourth column
+            return assessmentName === 'Introduction to Data Literacy';
+        }).join('\n');
+
+
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals' and 'Reported Score' >= 130
+        var dhCustomCourses = csvContent.split('\n').filter(function(line, index) {
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
+
+            // Skip header row
+            if (index === 0) return false;
+
+            var values = line.split(',');
+            console.log(values);
+            var assessmentName = values[8].trim(); // Assuming 'Assessment Name' is the fourth column
+            return assessmentName !== 'Introduction to Data Literacy';
+        }).join('\n');
+
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals' and 'Reported Score' >= 130
+        var bosunDataCourses = csvContent.split('\n').filter(function(line, index) {
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
+
+            // Skip header row
+            if (index === 0) return false;
+
+            var values = line.split(',');
+            console.log(values);
+            var assessmentName = values[8].trim(); // Assuming 'Assessment Name' is the fourth column
+            return assessmentName === 'Data Science for Business';
+        }).join('\n');
+
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals' and 'Reported Score' >= 130
+        var bosunCustomCourses = csvContent.split('\n').filter(function(line, index) {
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
+
+            // Skip header row
+            if (index === 0) return false;
+
+            var values = line.split(',');
+            console.log(values);
+            var assessmentName = values[8].trim(); // Assuming 'Assessment Name' is the fourth column
+            return assessmentName !== 'Data Science for Business';
+        }).join('\n');
+
+        // Filter on 'Assessment Name' == 'Analytic Fundamentals' and 'Reported Score' >= 130
+        var bosunGovernanceCourses = csvContent.split('\n').filter(function(line, index) {
+            
+            // skip empty lines
+            if (line.trim() === '') return false;
+
+            // Skip header row
+            if (index === 0) return false;
+
+            var values = line.split(',');
+            console.log(values);
+            var assessmentName = values[8].trim(); // Assuming 'Assessment Name' is the fourth column
+            return assessmentName === 'Data Governance Concepts';
+        }).join('\n');
+
+        
+        
 
         // Output filtered courses to CSV files
         var dhDataCourseOutput = 'Deckhand Data Courses.csv';
@@ -234,6 +288,24 @@
             // Dummy implementation - Replace with actual code to save CSV file
             console.log('Saving file:', filename);
             console.log('Data:', data);
+            // Create a blob from the filtered CSV content
+            var blob = new Blob([data], { type: 'text/csv' });
+            console.log('blobbed')
+
+            // Create a link element to trigger the download
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+
+            // Append link to the document body
+            document.body.appendChild(link);
+
+            // Trigger the download
+            link.click();
+
+            // Clean up: Remove the link from the document body
+            document.body.removeChild(link);
+
         }
 
         // Save filtered courses to CSV files
