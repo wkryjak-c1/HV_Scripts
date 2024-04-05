@@ -116,6 +116,7 @@
         var filteredCsvContent = csvContent.split('\n').filter(function(line, index) {
             //return line.includes('Analytic Fundamentals') && parseInt(line.split(',')[2]) > 130;
             // skip header row
+            console.log(index);
             if (index === 0) return true;
 
             var values = line.split(',');
