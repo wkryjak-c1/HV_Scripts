@@ -54,12 +54,14 @@
     <h2>CSV File Viewer, Sorter, and Filter and More</h2>
     <!-- specific input button for csv files -->
     <input type="file" id="csvFileInput" accept=".csv">
+    <a href="#filterButton">Go to Filter</a>
     
     <!-- element for table which will be displayed (if we want) -->
     <table id="csvTable"></table>
         
     <!-- button that sorts? and then exports the file for the user -->
-    <button onclick="filterAndSave()">Filter and Save</button>
+
+    <button id="filterButton" onclick="filterAndSave()">Filter and Save</button>
 </div>
 
 <script src="hv_script.js">
