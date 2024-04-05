@@ -99,6 +99,11 @@
 
         var table = document.getElementById('csvTable');
 
+        // Extract the header row
+        var headerRow = Array.from(table.rows[0].cells).map(function(cell){
+            return cell.textContent;
+        })
+
         // Convert sorted table back to CSV and display it
         var csvContent = Array.from(table.rows).map(function(row) {
             return Array.from(row.cells).map(function(cell) {
@@ -110,11 +115,20 @@
         // Filter on 'Assessment Name' == 'Analytic Fundamentals'
         var filteredCsvContent = csvContent.split('\n').filter(function(line) {
             //return line.includes('Analytic Fundamentals') && parseInt(line.split(',')[2]) > 130;
-            return line.includes('Analytic Fundamentals');
+            // skip header row
+            if (index === 0) return true;
+
+            var values = line.split(',');
+            var assessment_name = values[3];
+            var reported_score = parseInt(values[7]);
+            return assessmentName.includes('Analytic Fundamentals') && reportedScore >= 130;
         }).join('\n');
 
+        var finalCsvContent = headerRow + '\n' + filteredCsvContent;
+        
+
         // Create a blob from the filtered CSV content
-        var blob = new Blob([filteredCsvContent], { type: 'text/csv' });
+        var blob = new Blob([finalCsvContent], { type: 'text/csv' });
         
         // Create a link element to trigger the download
         var link = document.createElement('a');
