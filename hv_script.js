@@ -158,7 +158,7 @@
             console.log(values);
             var assessmentName = values[3].trim(); // Assuming 'Assessment Name' is the fourth column
             var reportedScore = parseInt(values[7]); // Assuming 'Reported Score' is the eighth column
-            return assessmentName === 'Analytic Fundamentals' && reportedScore >= 130;
+            return assessmentName === 'Analytic Fundamentals' && reportedScore > 130; // want scores of 131 or higher
         }).join('\n');
 
         var finalCsvContent = headerRow + '\n' + filteredCsvContent;
