@@ -52,17 +52,18 @@
 
 <div id="container">
     <h2>CSV File Viewer, Sorter, and Filter and More</h2>
+    
     <h3>High Scores Filter</h3>
+    
     <p>Click the button and choose the Datacamp Assessments csv file</p>
     <!-- specific input button for csv files -->
-    <input type="file" id="csvFileInput" accept=".csv">
+    <input type="file" id="assessmentsCsvFileInput" accept=".csv">
     <a href="#assessmentFilterButton">Go to Export</a>
     
     <!-- element for table which will be displayed (if we want) -->
-    <table id="csvTable"></table>
+    <table id="assessmentsCsvTable"></table>
         
     <!-- button that sorts? and then exports the file for the user -->
-
     <button id="assessmentFilterButton" onclick="filterAndSave()">Export High Assessment Scores</button>
 
 
@@ -76,11 +77,23 @@
     <table id="programsCsvTable"></table>
         
     <!-- button that sorts? and then exports the file for the user -->
-
     <button id="courseFilterButton" onclick="parsePrograms()">Export Parsed Courses</button>
-</div>
 
-<script src="hv_script.js">
+    
+    <h3>Superteam Section</h3>
+    <p>Click the button and choose the Super Team Excel file</p>
+    <!-- specific input button for csv files -->
+    <input type="file" id="coursesCsvFileInput" accept=".xlsx">
+    <a href="#superTeamButton">Go to Export</a>
+    
+    <!-- element for table which will be displayed (if we want) -->
+    <table id="superCsvTable"></table>
+        
+    <!-- button that sorts? and then exports the file for the user -->
+     <button id="superTeamButton" onclick="parsePrograms()">Export Super Courses</button>
+</div>
+<script src="papaparse.min.js"></script>
+<script src="hv_script_v3.js">
 
 </script>
 
