@@ -44,6 +44,8 @@ var programsCsv;
         
     });
 
+
+
    /* 
     function to parse and display the csv data on the page 
     Also gets header information so it can be used for sorting and filtering
@@ -148,8 +150,33 @@ function quoteArrays(filteredRows){
 }
 
 
+function getUserCountOld(csvContent, emailIndex, assessmentIndex){
+        // Preprocess data to count occurrences of UserEmail for courses other than 'Introduction to Data Literacy'
+        var userEmailCounts = {};
+        csvContent.split('\n').forEach(function(line, index) {
+            // Skip empty lines and header row
+            if (line.trim() === '' || index === 0) return;
 
+            var values = line.split(',');
+            var assessmentName = values[assessmentIndex].trim(); 
+            var assessmentNameAlt = values[assessmentIndex+1].trim(); // because of commas I am checking two columns. Not elegant but works for now
+            var userEmail = values[emailIndex].trim(); // Assuming the index of UserEmail column
+            
+            // Check if the assessment name is not 'Introduction to Data Literacy'
+            if (assessmentName === 'Introduction to Data Literacy' || assessmentNameAlt === 'Introduction to Data Literacy') {
+                return false;
+            }
+            else {
+                userEmailCounts[userEmail] = (userEmailCounts[userEmail] || 0) + 1;
+            }
 
+            return userEmailCounts;
+        });
+    }
+
+function getUserCount(){
+
+}
 
 
 
@@ -202,23 +229,67 @@ function quoteArrays(filteredRows){
 
         }
 
-        for (var i = csvContent.length - 1; i >= 0; i--) {
-        	//console.log(csvContent[i][8]);
-        }
-
         var filteredRows = csvContent.filter(function(row,index){
 			// Skip empty lines and header row
 	        if (index === 0 || row.length === 0) return false;
 	        var assessmentName = row[8] ? row[8].trim() : ''; // Check if assessment name exists before trimming
 	        var userEmail = row[2] ? row[2].trim() : ''; // Check if reported score exists before parsing
 	        var courseStatus = row[15] ? row[15].trim() : '';
-	        return assessmentName !== programFilter;
+	        return assessmentName === programFilter;
 		});
 		console.log('Get Data Courses!');
 		console.log(filteredRows);
 
 		// csv being reconstructed in the quoteArrays function
 		var quotedRows = quoteArrays(filteredRows);
+		
+		var finalCsvContent = headerRow + '\n' + quotedRows;
+		return finalCsvContent;
+
+    }
+
+
+    function getCustomCourses(csvContent, cohortType){
+
+    	var headerRow = csvContent[0];
+    	var emailCounts = {}; // object to store email counts
+
+        if(cohortType === 'Deckhand'){
+            var programFilter = 'Introduction to Data Literacy'
+        }
+        else if(cohortType === 'Bosun'){
+            var programFilter = 'Data Science for Business'
+
+        }
+
+        // loop through the rows and save to variables for filtering
+        var filteredRows = csvContent.filter(function(row,index){
+			// Skip empty lines and header row
+	        if (index === 0 || row.length === 0) return false;
+	        var assessmentName = row[8] ? row[8].trim() : ''; // Right now this is the only one we use
+	        var userEmail = row[2] ? row[2].trim() : ''; 
+	        var courseStatus = row[15] ? row[15].trim() : '';
+
+	        if (userEmail) {
+     	   		// Increment count for this email or initialize count to 1 if it's the first occurrence
+        		emailCounts[userEmail] = (emailCounts[userEmail] || 0) + 1;
+    		}
+
+	        return assessmentName !== programFilter; // and we use it here to filter
+		});
+
+		var filteredAndCompletedRows = filteredRows.filter(function(row){
+			var userEmail = row[2] ? row[2].trim() : ''; 
+	        var courseStatus = row[15] ? row[15].trim() : '';
+
+	        // Return rows where emailCount is 1 or emailCount is > 1 and courseStatus is "Completed"
+        	return emailCounts[userEmail] === 1 || (emailCounts[userEmail] > 1 && courseStatus === "Completed");
+		});
+		
+		console.log(emailCounts);
+
+		// csv being reconstructed in the quoteArrays function
+		var quotedRows = quoteArrays(filteredAndCompletedRows);
 		
 		var finalCsvContent = headerRow + '\n' + quotedRows;
 		return finalCsvContent;
@@ -249,8 +320,13 @@ function filterAndSave(){
 /* For program filtering */
 function parsePrograms(){
 
-	var dhDataCourses = getDataCourses(programsCsv,'Deckhand');
-	createBlobAndDownload(dhDataCourses,'Deckhand Custom Courses.csv');
-    var bosunDataCourses = getDataCourses(programsCsv,'Bosun');
+	//var dhDataCourses = getDataCourses(programsCsv,'Deckhand');
+	//createBlobAndDownload(dhDataCourses,'Deckhand Custom Courses.csv');
+    //var bosunDataCourses = getDataCourses(programsCsv,'Bosun');
+
+    var dhCustomCourses = getCustomCourses(programsCsv,'Deckhand');
+    createBlobAndDownload(dhCustomCourses,'Deckhand Custom Courses.csv');
+
+    //var bosunCustomCourses = getCustomCourses(programsCsv, 'Bosun');
 
 }
