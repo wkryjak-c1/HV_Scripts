@@ -83,8 +83,13 @@
     <h3>Superteam Section</h3>
     <p>Click the button and choose the Super Team Excel file</p>
     <!-- specific input button for csv files -->
-    <input type="file" id="coursesCsvFileInput" accept=".xlsx">
+    <input type="file" id="superCsvFileInput" accept=".xlsx">
     <a href="#superTeamButton">Go to Export</a>
+
+    <!-- Dropdown selector for courses -->
+    <select id="courseSelector">
+        <option value="">Select a course</option>
+    </select>
     
     <!-- element for table which will be displayed (if we want) -->
     <table id="superCsvTable"></table>
@@ -93,6 +98,8 @@
      <button id="superTeamButton" onclick="parsePrograms()">Export Super Courses</button>
 </div>
 <script src="papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.4/xlsx.full.min.js"></script>
+
 <script src="hv_script_v3.js">
 
 </script>

@@ -1,5 +1,6 @@
 var assessmentsCsv;
 var programsCsv;
+var globalJson;
 
 // event listeners to get files and recognize when the file is loaded
 
@@ -43,6 +44,146 @@ var programsCsv;
 	    }
         
     });
+
+
+    window.onload = function(courses) {
+	  var select = document.getElementById("courseSelector");
+
+	  // Program Dates
+	  var courses = [
+	  ["Deckhand 27", new Date("Tuesday, January 23, 2024")],
+	  ["Deckhand 28", new Date("Wednesday, February 7, 2024")],
+	  ["Deckhand 29", new Date("Tuesday, February 27, 2024")],
+	  ["Deckhand 30",	new Date("Friday, March 22, 2024")],
+	  ["Deckhand 31",new Date(	"Tuesday, April 30, 2024")],
+	  ["Deckhand 32", new Date("Tuesday, May 7, 2024")],
+	  ["Deckhand 33", new Date("Thursday, July 11, 2024")],
+	  ["Deckhand 34",new Date	("Tuesday, July 23, 2024")],
+	  ["Deckhand 35",new Date	("Friday, August 9, 2024")],
+	  ["Deckhand 36",new Date	("Wednesday, August 21, 2024")],
+	  ["Deckhand 37",new Date	("Tuesday, September 10, 2024")],
+	  ["Deckhand 38",new Date	("Thursday, September 19, 2024")],
+	  ["Bosun 12",new Date ("Thursday, January 25, 2024")],
+	  ["Bosun 13",new Date	("Friday, February 2, 2024")],
+	  ["Bosun 14",new Date	("Wednesday, March 13, 2024")],
+	  ["Bosun 15",new Date	("Tuesday, April 9, 2024")],
+	  ["Bosun 16",new Date	("Thursday, June 6, 2024")],
+	  ["Bosun 17",new Date	("Tuesday, June 18, 2024")],
+	  ["Bosun 18",new Date	("Wednesday, July 31, 2024")],
+	  ["Bosun 19",new Date	("Wednesday, August 7, 2024")],
+	  ["Bosun 20",new Date	("Thursday, August 1, 2024")],
+	  ["Bosun 21",new Date	("Wednesday, September 11, 2024")],
+	  ["First Mate 1",new Date(	"Wednesday, February 14, 2024")],
+	  ["First Mate 2",new Date(	"Thursday, May 23, 2024")],
+	  ["First Mate 3",new Date(	"Tuesday, September 3, 2024")]
+	  ];
+
+		// Populate select element
+	  courses.forEach(course => {
+	    var option = document.createElement("option");
+	    option.value = course[1];
+	    option.textContent = course[0];
+	    select.appendChild(option);
+	  });
+
+	  // Event listener for when the course selection changes
+	  document.getElementById("courseSelector").addEventListener("change", function() {
+	    var selectedOption = this.value;
+
+	    // Filter JSON data based on the selected course's start date
+	    var filteredData = filterDataByRegistrationDate(selectedOption);
+
+	    // Do something with the filtered data (e.g., display it)
+	    console.log(filteredData);
+	  });
+
+	};
+
+	
+
+
+   document.getElementById('superCsvFileInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheetName = workbook.SheetNames[0];
+            var sheet = workbook.Sheets[sheetName];
+
+            // Modify the range to start from row 12
+            var range = XLSX.utils.decode_range(sheet['!ref']);
+            console.log(range);
+            range.s.r = 11; // Start at row 12
+            range.s.c = 0;
+            range.e.c = 27;
+            range.e.r = 5000; //making this a big number because getting it dynamically was not working correctly
+
+            // Extract the last row and column indices
+            var lastRowIndex = range.e.r; // Last row index
+            var lastColumnIndex = range.e.c;
+            
+
+            
+            console.log('Last Row/Column Indices:', lastRowIndex, lastColumnIndex);
+            console.log('Before modifying range:', sheet['!ref']);
+
+
+            // Modify the range to start from row 12 and extend to the last populated cell
+            var rangeString = 'A12:' + XLSX.utils.encode_cell({ r: lastRowIndex, c: lastColumnIndex });
+            sheet['!ref'] = rangeString;
+            // Modify the range here
+			console.log('After modifying range:', sheet['!ref']);
+
+
+            // Convert the modified sheet to JSON
+            var jsonData = XLSX.utils.sheet_to_json(sheet);
+            console.log(jsonData);
+            globalJson = jsonData;
+
+            
+
+
+
+
+        } catch (error) {
+            console.error('Error parsing Excel file:', error);
+        }
+    };
+
+    reader.onerror = function(event) {
+        console.error('Error reading file:', event.target.error);
+    };
+
+    reader.readAsArrayBuffer(file);
+
+});
+
+/*
+Before graduation of the cohort, and midpoint, always quality checks on Super Team.
+First have to remove rows then filter by start date of the cohort. Start dates come from program dates file/sheet.
+Let’s say it’s may 7th, filter by column U and may 7th. Then filter out blanks in drop date. Then filter out any Registration Status = canceled.
+Then copy preferred name and email and AA and AB to copy into the participant tracker.
+Dropdown for cohort or course type (bosun or deckhand) because they do them one at a time sometimes. 
+Verify for graduation — do the 3 steps then copy the managers off the newest version of the report. 
+*/
+
+// Function to filter JSON objects based on registration date
+function filterDataByRegistrationDate(registrationDate) {
+	console.log("registration date for filter", registrationDate);
+    // Convert the registrationDate to match the format of the "Registration Date" field in your JSON data
+    var formattedRegistrationDate = new Date(registrationDate).getTime(); // Convert to milliseconds since epoch
+    console.log("formatted date for filter", formattedRegistrationDate);
+    return globalJson.filter(function(item) {
+        // Convert the "Registration Date" field to match the format of registrationDate for comparison
+        var itemRegistrationDate = new Date(item["Registration Date"]).getTime(); // Convert to milliseconds since epoch
+        return itemRegistrationDate === formattedRegistrationDate;
+    });
+}
+
+/* Leaving off here...need to get the dates to match up */
 
 
 
@@ -150,33 +291,6 @@ function quoteArrays(filteredRows){
 }
 
 
-function getUserCountOld(csvContent, emailIndex, assessmentIndex){
-        // Preprocess data to count occurrences of UserEmail for courses other than 'Introduction to Data Literacy'
-        var userEmailCounts = {};
-        csvContent.split('\n').forEach(function(line, index) {
-            // Skip empty lines and header row
-            if (line.trim() === '' || index === 0) return;
-
-            var values = line.split(',');
-            var assessmentName = values[assessmentIndex].trim(); 
-            var assessmentNameAlt = values[assessmentIndex+1].trim(); // because of commas I am checking two columns. Not elegant but works for now
-            var userEmail = values[emailIndex].trim(); // Assuming the index of UserEmail column
-            
-            // Check if the assessment name is not 'Introduction to Data Literacy'
-            if (assessmentName === 'Introduction to Data Literacy' || assessmentNameAlt === 'Introduction to Data Literacy') {
-                return false;
-            }
-            else {
-                userEmailCounts[userEmail] = (userEmailCounts[userEmail] || 0) + 1;
-            }
-
-            return userEmailCounts;
-        });
-    }
-
-function getUserCount(){
-
-}
 
 
 
