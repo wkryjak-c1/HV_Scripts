@@ -89,12 +89,35 @@ var globalJson;
 	  // Event listener for when the course selection changes
 	  document.getElementById("courseSelector").addEventListener("change", function() {
 	    var selectedOption = this.value;
+	    //console.log("Selected Option",selectedOption)
+	    //console.log("Type of selected option:", typeof selectedOption);
+	    var selectedOptionDate = new Date(selectedOption); // Convert the value to a Date object
+
+	    // crazy transforms
+	    // Get the year, month, and day components from the Date object
+		var year = selectedOptionDate.getFullYear();
+		var month = selectedOptionDate.getMonth() + 1; // Months are zero-based
+		var day = selectedOptionDate.getDate();
+
+		// Calculate the number of days since epoch for the given date
+		var daysSinceEpoch = Date.UTC(year, month - 1, day) / (1000 * 60 * 60 * 24);
+		console.log("Days since epoch",daysSinceEpoch);
+		//console.log("Year, Month, Day",year,month,day);
+
+
+
 
 	    // Filter JSON data based on the selected course's start date
-	    var filteredData = filterDataByRegistrationDate(selectedOption);
+	    var filteredData = filterDataByRegistrationDate(daysSinceEpoch);
+	    filteredData = filterDataByRegistrationStatus(filteredData);
+	    filteredData = filterDataByDropDate(filteredData);
 
 	    // Do something with the filtered data (e.g., display it)
-	    console.log(filteredData);
+	    console.log("Filtered Data", filteredData);
+
+	    var filteredCsv = jsonToCsv(filteredData);
+	    displayCSV(filteredCsv);
+
 	  });
 
 	};
@@ -171,17 +194,60 @@ Verify for graduation — do the 3 steps then copy the managers off the newest v
 */
 
 // Function to filter JSON objects based on registration date
-function filterDataByRegistrationDate(registrationDate) {
-	console.log("registration date for filter", registrationDate);
-    // Convert the registrationDate to match the format of the "Registration Date" field in your JSON data
-    var formattedRegistrationDate = new Date(registrationDate).getTime(); // Convert to milliseconds since epoch
-    console.log("formatted date for filter", formattedRegistrationDate);
+// There are issues with excel/unix date conversion which is why all the weird stuff
+function filterDataByRegistrationDate(daysSinceEpoch) {
+	//console.log("registration date for filter", registrationDate); // Displays the human readable date
+    
+    //var formattedRegistrationDate = new Date(registrationDate).getTime(); // Convert to milliseconds since epoch
+    //var formattedRegistrationDate = new Date(registrationDate);
+    
+    //console.log("formatted date for filter", formattedRegistrationDate);
+    //console.log("Type of selected option:", typeof formattedRegistrationDate);
+    console.log("Days since epoch:",daysSinceEpoch)
+
     return globalJson.filter(function(item) {
         // Convert the "Registration Date" field to match the format of registrationDate for comparison
-        var itemRegistrationDate = new Date(item["Registration Date"]).getTime(); // Convert to milliseconds since epoch
-        return itemRegistrationDate === formattedRegistrationDate;
+        //var itemRegistrationDate = new Date(item["Registration Date"]); // Convert to milliseconds since epoch
+        var itemRegistrationDate = excelSerialToUnix(item["Registration Date"])
+        console.log("Item Registration Date", itemRegistrationDate);
+    	console.log("Type of selected option:", typeof itemRegistrationDate);
+        // Convert the "Registration Date" field from days since epoch to milliseconds since epoch
+        //var daysSinceEpoch = parseFloat(item["Registration Date"]);
+        var year = itemRegistrationDate.getFullYear();
+		var month = itemRegistrationDate.getMonth() + 1; // Months are zero-based
+		var day = itemRegistrationDate.getDate();
+
+
+    	//console.log("Unix date for filter", formattedRegistrationDate);
+		// Calculate the number of days since epoch for the given date
+		var itemDaysSinceEpoch = Date.UTC(year, month - 1, day) / (1000 * 60 * 60 * 24);
+		console.log("Days since epoch",itemDaysSinceEpoch);
+		console.log("Year, Month, Day",year,month,day);
+        //var itemRegistrationDate = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
+        console.log("Item Registration Date",itemRegistrationDate);
+        return itemDaysSinceEpoch === daysSinceEpoch;
     });
 }
+
+// for super team we need to filter out those with cancelled enrollment
+function filterDataByRegistrationStatus(filteredData){
+	return filteredData.filter(function(item){
+		var registrationStatus = item["Registration Status"];
+		return registrationStatus !== 'Enrollment Cancelled';
+
+
+	});
+}
+
+// finally need to filter out blank Drop Dates
+function filterDataByDropDate(filteredData) {
+    return filteredData.filter(function(item) {
+        // Check if the "Drop Date" field exists and is not null or undefined
+        return item.hasOwnProperty('Drop Date') && item['Drop Date'] !== null && item['Drop Date'] !== undefined;
+    });
+}
+
+
 
 /* Leaving off here...need to get the dates to match up */
 
@@ -224,6 +290,17 @@ function filterDataByRegistrationDate(registrationDate) {
         document.body.removeChild(link);
 
     }
+
+function excelSerialToUnix(serialDate) {
+    // Number of days between Excel base date (December 30, 1899) and Unix epoch base date (January 1, 1970)
+    var excelBaseDate = new Date("1899-12-30").getTime();
+    var unixBaseDate = new Date("1970-01-01").getTime();
+    var daysDiff = Math.abs(unixBaseDate - excelBaseDate) / (1000 * 60 * 60 * 24);
+
+    // Convert Excel serial date to Unix epoch format
+    var unixDate = new Date((serialDate - daysDiff) * (1000 * 60 * 60 * 24));
+    return unixDate;
+}
 
 
 
@@ -290,7 +367,28 @@ function quoteArrays(filteredRows){
     return quotedCsvContent;
 }
 
+function jsonToCsv(jsonData) {
+    // Extract headers from the first object in the JSON array
+    const headers = Object.keys(jsonData[0]);
 
+    // Convert JSON data to CSV format
+    const csvArray = [];
+    csvArray.push(headers.join(',')); // Add header row
+
+    // Loop through each object in the JSON array
+    jsonData.forEach(obj => {
+        const values = headers.map(header => {
+            // Escape double quotes and wrap values in double quotes
+            const escapedValue = obj[header].toString().replace(/"/g, '""');
+            return `"${escapedValue}"`;
+        });
+        csvArray.push(values.join(','));
+    });
+
+    //return csvArray.join('\n');
+    convertedCsv = csvArray.join('\n');
+    return convertedCsv;
+}
 
 
 
