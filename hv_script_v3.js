@@ -1,6 +1,7 @@
 var assessmentsCsv;
 var programsCsv;
 var globalJson;
+var globalFilteredCsv;
 
 // event listeners to get files and recognize when the file is loaded
 
@@ -44,6 +45,9 @@ var globalJson;
 	    }
         
     });
+
+
+
 
 
     window.onload = function(courses) {
@@ -115,8 +119,14 @@ var globalJson;
 	    // Do something with the filtered data (e.g., display it)
 	    console.log("Filtered Data", filteredData);
 
-	    var filteredCsv = jsonToCsv(filteredData);
-	    displayCSV(filteredCsv);
+	    //convert to csv so we can use it normally
+	    globalFilteredCsv = jsonToCsv(filteredData); //not sure we need this if below works
+
+	    // Display the CSV
+	    var csvTableElementName = "superCsvTable";
+	    displayCSVSuper(filteredData, csvTableElementName);
+	    //createBlobAndDownload(filteredData, 'superteam_info.csv');
+	    
 
 	  });
 
@@ -209,8 +219,8 @@ function filterDataByRegistrationDate(daysSinceEpoch) {
         // Convert the "Registration Date" field to match the format of registrationDate for comparison
         //var itemRegistrationDate = new Date(item["Registration Date"]); // Convert to milliseconds since epoch
         var itemRegistrationDate = excelSerialToUnix(item["Registration Date"])
-        console.log("Item Registration Date", itemRegistrationDate);
-    	console.log("Type of selected option:", typeof itemRegistrationDate);
+        //console.log("Item Registration Date", itemRegistrationDate);
+    	//console.log("Type of selected option:", typeof itemRegistrationDate);
         // Convert the "Registration Date" field from days since epoch to milliseconds since epoch
         //var daysSinceEpoch = parseFloat(item["Registration Date"]);
         var year = itemRegistrationDate.getFullYear();
@@ -221,10 +231,10 @@ function filterDataByRegistrationDate(daysSinceEpoch) {
     	//console.log("Unix date for filter", formattedRegistrationDate);
 		// Calculate the number of days since epoch for the given date
 		var itemDaysSinceEpoch = Date.UTC(year, month - 1, day) / (1000 * 60 * 60 * 24);
-		console.log("Days since epoch",itemDaysSinceEpoch);
-		console.log("Year, Month, Day",year,month,day);
+		//console.log("Days since epoch",itemDaysSinceEpoch);
+		//console.log("Year, Month, Day",year,month,day);
         //var itemRegistrationDate = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
-        console.log("Item Registration Date",itemRegistrationDate);
+        //console.log("Item Registration Date",itemRegistrationDate);
         return itemDaysSinceEpoch === daysSinceEpoch;
     });
 }
@@ -261,6 +271,7 @@ function filterDataByDropDate(filteredData) {
 	    var table = document.getElementById(elementID);
 	    table.innerHTML = ''; // Clear existing table
 	    csvData.forEach(function(row, index) {
+	        console.log("Row:", row);
 	        var tableRow = table.insertRow();
 	        row.forEach(function(cell, cellIndex) {
 	            var cellElement = document.createElement(index === 0 ? 'th' : 'td');
@@ -269,6 +280,29 @@ function filterDataByDropDate(filteredData) {
 	        });
 	    });
 	}
+
+	function displayCSVSuper(csvData, elementID) {
+    var table = document.getElementById(elementID);
+    table.innerHTML = ''; // Clear existing table
+
+    // Extract headers from the first object in the array
+    var headers = Object.keys(csvData[0]);
+    var headerRow = table.insertRow();
+    headers.forEach(function(header) {
+        var cell = headerRow.insertCell();
+        cell.textContent = header;
+    });
+
+    // Iterate over each object in the array
+    csvData.forEach(function(rowObj) {
+        var tableRow = table.insertRow();
+        headers.forEach(function(header) {
+            var cell = tableRow.insertCell();
+            cell.textContent = rowObj[header];
+        });
+    });
+}
+
 
 	/* function to download the filtered csv */
 	function createBlobAndDownload(finalCsvContent, filename){
@@ -527,6 +561,28 @@ function filterAndSave(){
 	console.log(finalCsvContent);
 	createBlobAndDownload(finalCsvContent, 'high_assessment_scores.csv');
 }
+
+
+function superSave() {
+        var table = document.getElementById('superCsvTable');
+
+        // Extract the header row
+        var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
+            return cell.textContent;
+        }).join(',');
+
+        // Convert sorted table back to CSV and display it
+        var csvContent = Array.from(table.rows).map(function(row) {
+            return Array.from(row.cells).map(function(cell) {
+                return cell.textContent;
+            }).join(',');
+        }).join('\n');
+
+        
+        //var finalCsvContent = headerRow + '\n' + csvContent;
+
+        createBlobAndDownload(csvContent, 'superteam_info.csv');
+    }
 
 
 /* For program filtering */
