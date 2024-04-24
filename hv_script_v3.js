@@ -53,9 +53,19 @@ var globalFilteredCsv;
     window.onload = function(courses) {
 	  var select = document.getElementById("courseSelector");
 
+	  //first filter by live course start date (e.g. march 13) based on specific cohort
+	  // then remove everyone with registration status of dropped or enrollment canceled, and keep Enrolled - done
+
+	  // then of these 24 enrolled learners, remove First and Last name columns if possible
+	  
+	  // add another option to get dropouts which is anyone = dropped or enrollment canceled, make sure the totals add up
+	  // they are used similarly in different ways.
+	  // export dropouts or export enrolled, so button does the filtering
+
+
 	  // Program Dates
 	  var courses = [
-	  ["Deckhand 27", new Date("Tuesday, January 23, 2024")],
+	  ["Deckhand 27", new Date("Tuesday, January 23, 2024")], // for example this should have 22 enrolled people. 
 	  ["Deckhand 28", new Date("Wednesday, February 7, 2024")],
 	  ["Deckhand 29", new Date("Tuesday, February 27, 2024")],
 	  ["Deckhand 30",	new Date("Friday, March 22, 2024")],
@@ -243,7 +253,7 @@ function filterDataByRegistrationDate(daysSinceEpoch) {
 function filterDataByRegistrationStatus(filteredData){
 	return filteredData.filter(function(item){
 		var registrationStatus = item["Registration Status"];
-		return registrationStatus !== 'Enrollment Cancelled';
+		return registrationStatus === 'Enrolled';
 
 
 	});
@@ -588,13 +598,16 @@ function superSave() {
 /* For program filtering */
 function parsePrograms(){
 
-	//var dhDataCourses = getDataCourses(programsCsv,'Deckhand');
-	//createBlobAndDownload(dhDataCourses,'Deckhand Custom Courses.csv');
-    //var bosunDataCourses = getDataCourses(programsCsv,'Bosun');
+	var dhDataCourses = getDataCourses(programsCsv,'Deckhand');
+	createBlobAndDownload(dhDataCourses,'Deckhand Data Courses.csv');
+    
+    var bosunDataCourses = getDataCourses(programsCsv,'Bosun');
+    createBlobAndDownload(bosunDataCourses,'Bosun Data Courses.csv');
 
     var dhCustomCourses = getCustomCourses(programsCsv,'Deckhand');
     createBlobAndDownload(dhCustomCourses,'Deckhand Custom Courses.csv');
 
-    //var bosunCustomCourses = getCustomCourses(programsCsv, 'Bosun');
+    var bosunCustomCourses = getCustomCourses(programsCsv, 'Bosun');
+    createBlobAndDownload(bosunCustomCourses,'Bosun Custom Courses.csv');
 
 }
