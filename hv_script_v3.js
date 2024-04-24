@@ -57,7 +57,7 @@ var globalFilteredCsv;
 	  // then remove everyone with registration status of dropped or enrollment canceled, and keep Enrolled - done
 
 	  // then of these 24 enrolled learners, remove First and Last name columns if possible
-	  
+
 	  // add another option to get dropouts which is anyone = dropped or enrollment canceled, make sure the totals add up
 	  // they are used similarly in different ways.
 	  // export dropouts or export enrolled, so button does the filtering
@@ -123,14 +123,18 @@ var globalFilteredCsv;
 
 	    // Filter JSON data based on the selected course's start date
 	    var filteredData = filterDataByRegistrationDate(daysSinceEpoch);
+	    console.log("Filtered Data by reg date", filteredData);
 	    filteredData = filterDataByRegistrationStatus(filteredData);
-	    filteredData = filterDataByDropDate(filteredData);
+	    console.log("Filtered Data by reg status", filteredData);
+	    //filteredData = filterDataByDropDate(filteredData);  //since we're just filtering on enrolled we shouldn't need this step (for now)
+	    //console.log("Filtered Data by drop date", filteredData);
 
 	    // Do something with the filtered data (e.g., display it)
 	    console.log("Filtered Data", filteredData);
 
 	    //convert to csv so we can use it normally
 	    globalFilteredCsv = jsonToCsv(filteredData); //not sure we need this if below works
+	    console.log("Global Filtered CSV", globalFilteredCsv);
 
 	    // Display the CSV
 	    var csvTableElementName = "superCsvTable";
@@ -414,17 +418,26 @@ function quoteArrays(filteredRows){
 function jsonToCsv(jsonData) {
     // Extract headers from the first object in the JSON array
     const headers = Object.keys(jsonData[0]);
+    //console.log("Headers",headers);
 
     // Convert JSON data to CSV format
     const csvArray = [];
     csvArray.push(headers.join(',')); // Add header row
+    console.log("CSV Array",csvArray);
 
     // Loop through each object in the JSON array
     jsonData.forEach(obj => {
         const values = headers.map(header => {
-            // Escape double quotes and wrap values in double quotes
-            const escapedValue = obj[header].toString().replace(/"/g, '""');
-            return `"${escapedValue}"`;
+        	// First check if the property exists
+        	if(obj.hasOwnProperty(header)){
+        		// Escape double quotes and wrap values in double quotes
+            	const escapedValue = obj[header].toString().replace(/"/g, '""');
+            	return `"${escapedValue}"`;	
+        	} else {
+        		// if property doesn't exist add an empty string
+        		return '""';
+        	}
+            
         });
         csvArray.push(values.join(','));
     });
@@ -581,12 +594,14 @@ function superSave() {
             return cell.textContent;
         }).join(',');
 
+        
+
         // Convert sorted table back to CSV and display it
         var csvContent = Array.from(table.rows).map(function(row) {
-            return Array.from(row.cells).map(function(cell) {
-                return cell.textContent;
-            }).join(',');
-        }).join('\n');
+        return Array.from(row.cells).map(function(cell) {
+            return '"' + cell.textContent.replace(/[\r\n]+/g, '').replace(/"/g, '""') + '"'; // Quote and remove newline characters
+        }).join(',');
+    }).join('\n');
 
         
         //var finalCsvContent = headerRow + '\n' + csvContent;
