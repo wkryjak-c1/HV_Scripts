@@ -5,66 +5,64 @@ var globalFilteredCsv;
 
 // event listeners to get files and recognize when the file is loaded
 
-	document.getElementById('assessmentsCsvFileInput').addEventListener('change', async function(e) {
+document.getElementById('assessmentsCsvFileInput').addEventListener('change', async function(e) {
 	    
-	    var csvTableElementName = "assessmentsCsvTable";
-	    var file = e.target.files[0];
+    var csvTableElementName = "assessmentsCsvTable";
+    var file = e.target.files[0];
 	    
-	    if (!file) {
-	        console.log("No file selected");
-	        return;
-	    }
-	    try {
-	        var csvData = await parseCsv(file);
-	        displayCSV(csvData, csvTableElementName);
-	        assessmentsCsv = csvData;
-	    } catch (error) {
-	        console.error("Error processing CSV:", error);
-	    }
-	});
+    if (!file) {
+        console.log("No file selected");
+        return;
+    }
+    try {
+        var csvData = await parseCsv(file);
+        displayCSV(csvData, csvTableElementName);
+        assessmentsCsv = csvData;
+    } catch (error) {
+        console.error("Error processing CSV:", error);
+    }
+});
 
 
-	    // add event listener to the csvFileInput element which is the input button
-    document.getElementById('coursesCsvFileInput').addEventListener('change', async function(e) {
+// add event listener to the csvFileInput element which is the input button
+document.getElementById('coursesCsvFileInput').addEventListener('change', async function(e) {
  		
- 		var csvTableElementName = "programsCsvTable";
-        var file = e.target.files[0];
+	var csvTableElementName = "programsCsvTable";
+    var file = e.target.files[0];
     
-        if (!file) {
-	        console.log("No file selected");
-	        return;
-	    }
-	    try {
-	        var csvData = await parseCsv(file);
-	        console.log(csvData);
-	        displayCSV(csvData, csvTableElementName); //works great
-	        programsCsv = csvData;
-	        //createBlobAndDownload(programsCsv,'testing.csv');
-	    } catch (error) {
-	        console.error("Error processing CSV:", error);
-	    }
+    if (!file) {
+	    console.log("No file selected");
+	    return;
+	}
+	try {
+	    var csvData = await parseCsv(file);
+	    console.log(csvData);
+	    displayCSV(csvData, csvTableElementName); //works great
+	    programsCsv = csvData;
+	    //createBlobAndDownload(programsCsv,'testing.csv');
+	} catch (error) {
+	    console.error("Error processing CSV:", error);
+	}
         
-    });
+});
 
 
 
+window.onload = function(courses) {
+	var select = document.getElementById("courseSelector");
+
+	//first filter by live course start date (e.g. march 13) based on specific cohort
+	// then remove everyone with registration status of dropped or enrollment canceled, and keep Enrolled - done
+
+	// then of these 24 enrolled learners, remove First and Last name columns if possible
+
+	// add another option to get dropouts which is anyone = dropped or enrollment canceled, make sure the totals add up
+	// they are used similarly in different ways.
+	// export dropouts or export enrolled, so button does the filtering
 
 
-    window.onload = function(courses) {
-	  var select = document.getElementById("courseSelector");
-
-	  //first filter by live course start date (e.g. march 13) based on specific cohort
-	  // then remove everyone with registration status of dropped or enrollment canceled, and keep Enrolled - done
-
-	  // then of these 24 enrolled learners, remove First and Last name columns if possible
-
-	  // add another option to get dropouts which is anyone = dropped or enrollment canceled, make sure the totals add up
-	  // they are used similarly in different ways.
-	  // export dropouts or export enrolled, so button does the filtering
-
-
-	  // Program Dates
-	  var courses = [
+	// Program Dates
+	var courses = [
 	  ["Deckhand 27", new Date("Tuesday, January 23, 2024")], // for example this should have 22 enrolled people. 
 	  ["Deckhand 28", new Date("Wednesday, February 7, 2024")],
 	  ["Deckhand 29", new Date("Tuesday, February 27, 2024")],
@@ -90,66 +88,116 @@ var globalFilteredCsv;
 	  ["First Mate 1",new Date(	"Wednesday, February 14, 2024")],
 	  ["First Mate 2",new Date(	"Thursday, May 23, 2024")],
 	  ["First Mate 3",new Date(	"Tuesday, September 3, 2024")]
-	  ];
+	];
 
-		// Populate select element
-	  courses.forEach(course => {
-	    var option = document.createElement("option");
-	    option.value = course[1];
-	    option.textContent = course[0];
-	    select.appendChild(option);
-	  });
+	// Populate select element
+	courses.forEach(course => {
+	  var option = document.createElement("option");
+	  option.value = course[1];
+	  option.textContent = course[0];
+	  select.appendChild(option);
+	});
+}
 
-	  // Event listener for when the course selection changes
-	  document.getElementById("courseSelector").addEventListener("change", function() {
-	    var selectedOption = this.value;
-	    //console.log("Selected Option",selectedOption)
-	    //console.log("Type of selected option:", typeof selectedOption);
-	    var selectedOptionDate = new Date(selectedOption); // Convert the value to a Date object
+// Event listener for when the course selection changes
+document.getElementById("courseSelector").addEventListener("change", function() {
+	var selectedOption = this.value;
+	//console.log("Selected Option",selectedOption)
+	//console.log("Type of selected option:", typeof selectedOption);
+	var selectedOptionDate = new Date(selectedOption); // Convert the value to a Date object
 
-	    // crazy transforms
-	    // Get the year, month, and day components from the Date object
-		var year = selectedOptionDate.getFullYear();
-		var month = selectedOptionDate.getMonth() + 1; // Months are zero-based
-		var day = selectedOptionDate.getDate();
+	// crazy transforms
+	// Get the year, month, and day components from the Date object
+	var year = selectedOptionDate.getFullYear();
+	var month = selectedOptionDate.getMonth() + 1; // Months are zero-based
+	var day = selectedOptionDate.getDate();
 
-		// Calculate the number of days since epoch for the given date
-		var daysSinceEpoch = Date.UTC(year, month - 1, day) / (1000 * 60 * 60 * 24);
-		console.log("Days since epoch",daysSinceEpoch);
-		//console.log("Year, Month, Day",year,month,day);
+	// Calculate the number of days since epoch for the given date
+	var daysSinceEpoch = Date.UTC(year, month - 1, day) / (1000 * 60 * 60 * 24);
+	console.log("Days since epoch",daysSinceEpoch);
+	//console.log("Year, Month, Day",year,month,day);
+
+    // Filter JSON data based on the selected course's start date
+    var filteredData = filterDataByRegistrationDate(daysSinceEpoch);
+    console.log("Filtered Data by reg date", filteredData);
+    filteredData = filterDataByRegistrationStatus(filteredData);
+    console.log("Filtered Data by reg status", filteredData);
+    //filteredData = filterDataByDropDate(filteredData);  //since we're just filtering on enrolled we shouldn't need this step (for now)
+    //console.log("Filtered Data by drop date", filteredData);
+
+    // Do something with the filtered data (e.g., display it)
+    console.log("Filtered Data", filteredData);
+
+    //convert to csv so we can use it normally
+    globalFilteredCsv = jsonToCsv(filteredData); //not sure we need this if below works
+    console.log("Global Filtered CSV", globalFilteredCsv);
+
+    // Display the CSV
+    var csvTableElementName = "superCsvTable";
+    displayCSVSuper(filteredData, csvTableElementName);
+    //createBlobAndDownload(filteredData, 'superteam_info.csv');
+  
+});
+
+
+document.getElementById('workdayFileInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheetName = workbook.SheetNames[0];
+            var sheet = workbook.Sheets[sheetName];
+
+            // Modify the range to start from row 12
+            var range = XLSX.utils.decode_range(sheet['!ref']);
+            console.log(range);
+            //range.s.r = 11; // Start at row 12
+            //range.s.c = 0;
+            //range.e.c = 27;
+            //range.e.r = 5000; //making this a big number because getting it dynamically was not working correctly
+
+            // Extract the last row and column indices
+            var lastRowIndex = range.e.r; // Last row index
+            var lastColumnIndex = range.e.c;
+            
+
+            
+            console.log('Last Row/Column Indices:', lastRowIndex, lastColumnIndex);
+            console.log('Before modifying range:', sheet['!ref']);
+
+
+           
+
+
+            // Convert the modified sheet to JSON
+            var jsonData = XLSX.utils.sheet_to_json(sheet);
+            console.log(jsonData);
+            globalJson = jsonData;
+
+            
 
 
 
 
-	    // Filter JSON data based on the selected course's start date
-	    var filteredData = filterDataByRegistrationDate(daysSinceEpoch);
-	    console.log("Filtered Data by reg date", filteredData);
-	    filteredData = filterDataByRegistrationStatus(filteredData);
-	    console.log("Filtered Data by reg status", filteredData);
-	    //filteredData = filterDataByDropDate(filteredData);  //since we're just filtering on enrolled we shouldn't need this step (for now)
-	    //console.log("Filtered Data by drop date", filteredData);
+        } catch (error) {
+            console.error('Error parsing Excel file:', error);
+        }
+    };
 
-	    // Do something with the filtered data (e.g., display it)
-	    console.log("Filtered Data", filteredData);
+    reader.onerror = function(event) {
+        console.error('Error reading file:', event.target.error);
+    };
 
-	    //convert to csv so we can use it normally
-	    globalFilteredCsv = jsonToCsv(filteredData); //not sure we need this if below works
-	    console.log("Global Filtered CSV", globalFilteredCsv);
+    reader.readAsArrayBuffer(file);
 
-	    // Display the CSV
-	    var csvTableElementName = "superCsvTable";
-	    displayCSVSuper(filteredData, csvTableElementName);
-	    //createBlobAndDownload(filteredData, 'superteam_info.csv');
-	    
-
-	  });
-
-	};
+});
 
 	
 
-
-   document.getElementById('superCsvFileInput').addEventListener('change', function(e) {
+document.getElementById('superCsvFileInput').addEventListener('change', function(e) {
     var file = e.target.files[0];
     var reader = new FileReader();
     
@@ -189,10 +237,6 @@ var globalFilteredCsv;
             var jsonData = XLSX.utils.sheet_to_json(sheet);
             console.log(jsonData);
             globalJson = jsonData;
-
-            
-
-
 
 
         } catch (error) {
@@ -295,7 +339,7 @@ function filterDataByDropDate(filteredData) {
 	    });
 	}
 
-	function displayCSVSuper(csvData, elementID) {
+function displayCSVSuper(csvData, elementID) {
     var table = document.getElementById(elementID);
     table.innerHTML = ''; // Clear existing table
 
@@ -318,26 +362,24 @@ function filterDataByDropDate(filteredData) {
 }
 
 
-	/* function to download the filtered csv */
-	function createBlobAndDownload(finalCsvContent, filename){
-        // Create a blob from the filtered CSV content
-        var blob = new Blob([finalCsvContent], { type: 'text/csv' });
+/* function to download the filtered csv */
+function createBlobAndDownload(finalCsvContent, filename){
+       // Create a blob from the filtered CSV content
+       var blob = new Blob([finalCsvContent], { type: 'text/csv' });
+       // Create a link element to trigger the download
+       var link = document.createElement('a');
+       link.href = window.URL.createObjectURL(blob);
+       link.download = filename;
 
-        // Create a link element to trigger the download
-        var link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
+       // Append link to the document body
+       document.body.appendChild(link);
 
-        // Append link to the document body
-        document.body.appendChild(link);
+       // Trigger the download
+       link.click();
 
-        // Trigger the download
-        link.click();
-
-        // Clean up: Remove the link from the document body
-        document.body.removeChild(link);
-
-    }
+       // Clean up: Remove the link from the document body
+       document.body.removeChild(link);
+}
 
 function excelSerialToUnix(serialDate) {
     // Number of days between Excel base date (December 30, 1899) and Unix epoch base date (January 1, 1970)
