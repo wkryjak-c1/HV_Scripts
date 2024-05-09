@@ -302,8 +302,6 @@ function filterDataByRegistrationStatus(filteredData){
 	return filteredData.filter(function(item){
 		var registrationStatus = item["Registration Status"];
 		return registrationStatus === 'Enrolled';
-
-
 	});
 }
 
@@ -317,27 +315,24 @@ function filterDataByDropDate(filteredData) {
 
 
 
-/* Leaving off here...need to get the dates to match up */
 
-
-
-   /* 
-    function to parse and display the csv data on the page 
-    Also gets header information so it can be used for sorting and filtering
-    */
-    function displayCSV(csvData, elementID) {
-	    var table = document.getElementById(elementID);
-	    table.innerHTML = ''; // Clear existing table
-	    csvData.forEach(function(row, index) {
-	        console.log("Row:", row);
-	        var tableRow = table.insertRow();
-	        row.forEach(function(cell, cellIndex) {
-	            var cellElement = document.createElement(index === 0 ? 'th' : 'td');
-	            cellElement.textContent = cell;
-	            tableRow.appendChild(cellElement);
-	        });
-	    });
-	}
+/* 
+function to parse and display the csv data on the page 
+Also gets header information so it can be used for sorting and filtering
+*/
+function displayCSV(csvData, elementID) {
+    var table = document.getElementById(elementID);
+    table.innerHTML = ''; // Clear existing table
+    csvData.forEach(function(row, index) {
+        console.log("Row:", row);
+        var tableRow = table.insertRow();
+        row.forEach(function(cell, cellIndex) {
+            var cellElement = document.createElement(index === 0 ? 'th' : 'td');
+            cellElement.textContent = cell;
+            tableRow.appendChild(cellElement);
+        });
+    });
+}
 
 function displayCSVSuper(csvData, elementID) {
     var table = document.getElementById(elementID);
@@ -364,23 +359,25 @@ function displayCSVSuper(csvData, elementID) {
 
 /* function to download the filtered csv */
 function createBlobAndDownload(finalCsvContent, filename){
-       // Create a blob from the filtered CSV content
-       var blob = new Blob([finalCsvContent], { type: 'text/csv' });
-       // Create a link element to trigger the download
-       var link = document.createElement('a');
-       link.href = window.URL.createObjectURL(blob);
-       link.download = filename;
+   // Create a blob from the filtered CSV content
+   var blob = new Blob([finalCsvContent], { type: 'text/csv' });
+   // Create a link element to trigger the download
+   var link = document.createElement('a');
+   link.href = window.URL.createObjectURL(blob);
+   link.download = filename;
 
-       // Append link to the document body
-       document.body.appendChild(link);
+   // Append link to the document body
+   document.body.appendChild(link);
 
-       // Trigger the download
-       link.click();
+   // Trigger the download
+   link.click();
 
-       // Clean up: Remove the link from the document body
-       document.body.removeChild(link);
+   // Clean up: Remove the link from the document body
+   document.body.removeChild(link);
 }
 
+
+/* Thought maybe there were timezone issues with dates so used this to check */
 function excelSerialToUnix(serialDate) {
     // Number of days between Excel base date (December 30, 1899) and Unix epoch base date (January 1, 1970)
     var excelBaseDate = new Date("1899-12-30").getTime();
@@ -438,6 +435,7 @@ function quoteFields(csv) {
     return quotedRows.join('\n');
 }
 
+
 function quoteArrays(filteredRows){
     var quotedRows = filteredRows.map(row => {
         return row.map(field => {
@@ -454,8 +452,10 @@ function quoteArrays(filteredRows){
 
     // Reconstruct the CSV with properly quoted rows
     var quotedCsvContent = quotedRows.map(row => row.join(',')).join('\n');
+    
     return quotedCsvContent;
 }
+
 
 function jsonToCsv(jsonData) {
     // Extract headers from the first object in the JSON array
@@ -486,15 +486,14 @@ function jsonToCsv(jsonData) {
 
     //return csvArray.join('\n');
     convertedCsv = csvArray.join('\n');
+    
     return convertedCsv;
 }
 
 
 
-
-
-	function parseCsv(file) {
-    return new Promise((resolve, reject) => {
+function parseCsv(file) {
+	return new Promise((resolve, reject) => {
         // Read the file content
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -528,84 +527,85 @@ function jsonToCsv(jsonData) {
     });
 }
 
-	function getDataCourses(csvContent, cohortType){		
+	
+function getDataCourses(csvContent, cohortType){		
 
-		var headerRow = csvContent[0];
+	var headerRow = csvContent[0];
 
-        if(cohortType === 'Deckhand'){
-            var programFilter = 'Introduction to Data Literacy'
-        }
-        else if(cohortType === 'Bosun'){
-            var programFilter = 'Data Science for Business'
-
-        }
-
-        var filteredRows = csvContent.filter(function(row,index){
-			// Skip empty lines and header row
-	        if (index === 0 || row.length === 0) return false;
-	        var assessmentName = row[8] ? row[8].trim() : ''; // Check if assessment name exists before trimming
-	        var userEmail = row[2] ? row[2].trim() : ''; // Check if reported score exists before parsing
-	        var courseStatus = row[15] ? row[15].trim() : '';
-	        return assessmentName === programFilter;
-		});
-		console.log('Get Data Courses!');
-		console.log(filteredRows);
-
-		// csv being reconstructed in the quoteArrays function
-		var quotedRows = quoteArrays(filteredRows);
-		
-		var finalCsvContent = headerRow + '\n' + quotedRows;
-		return finalCsvContent;
-
+    if(cohortType === 'Deckhand'){
+        var programFilter = 'Introduction to Data Literacy'
+    }
+    else if(cohortType === 'Bosun'){
+        var programFilter = 'Data Science for Business'
     }
 
-
-    function getCustomCourses(csvContent, cohortType){
-
-    	var headerRow = csvContent[0];
-    	var emailCounts = {}; // object to store email counts
-
-        if(cohortType === 'Deckhand'){
-            var programFilter = 'Introduction to Data Literacy'
-        }
-        else if(cohortType === 'Bosun'){
-            var programFilter = 'Data Science for Business'
-
-        }
-
-        // loop through the rows and save to variables for filtering
-        var filteredRows = csvContent.filter(function(row,index){
-			// Skip empty lines and header row
-	        if (index === 0 || row.length === 0) return false;
-	        var assessmentName = row[8] ? row[8].trim() : ''; // Right now this is the only one we use
-	        var userEmail = row[2] ? row[2].trim() : ''; 
-	        var courseStatus = row[15] ? row[15].trim() : '';
-
-	        if (userEmail) {
-     	   		// Increment count for this email or initialize count to 1 if it's the first occurrence
-        		emailCounts[userEmail] = (emailCounts[userEmail] || 0) + 1;
-    		}
-
-	        return assessmentName !== programFilter; // and we use it here to filter
-		});
-
-		var filteredAndCompletedRows = filteredRows.filter(function(row){
-			var userEmail = row[2] ? row[2].trim() : ''; 
-	        var courseStatus = row[15] ? row[15].trim() : '';
-
-	        // Return rows where emailCount is 1 or emailCount is > 1 and courseStatus is "Completed"
-        	return emailCounts[userEmail] === 1 || (emailCounts[userEmail] > 1 && courseStatus === "Completed");
+    var filteredRows = csvContent.filter(function(row,index){
+		// Skip empty lines and header row
+	    if (index === 0 || row.length === 0) return false;
+	    var assessmentName = row[8] ? row[8].trim() : ''; // Check if assessment name exists before trimming
+	    var userEmail = row[2] ? row[2].trim() : ''; // Check if reported score exists before parsing
+	    var courseStatus = row[15] ? row[15].trim() : '';
+	    return assessmentName === programFilter;
 		});
 		
-		console.log(emailCounts);
+	console.log('Get Data Courses!');
+	console.log(filteredRows);
 
-		// csv being reconstructed in the quoteArrays function
-		var quotedRows = quoteArrays(filteredAndCompletedRows);
+	// csv being reconstructed in the quoteArrays function
+	var quotedRows = quoteArrays(filteredRows);
 		
-		var finalCsvContent = headerRow + '\n' + quotedRows;
-		return finalCsvContent;
+	var finalCsvContent = headerRow + '\n' + quotedRows;
+	
+	return finalCsvContent;
 
+}
+
+
+function getCustomCourses(csvContent, cohortType){
+
+	var headerRow = csvContent[0];
+    var emailCounts = {}; // object to store email counts
+
+    if(cohortType === 'Deckhand'){
+        var programFilter = 'Introduction to Data Literacy'
     }
+    else if(cohortType === 'Bosun'){
+        var programFilter = 'Data Science for Business'
+    }
+
+    // loop through the rows and save to variables for filtering
+    var filteredRows = csvContent.filter(function(row,index){
+	// Skip empty lines and header row
+	    if (index === 0 || row.length === 0) return false;
+	    var assessmentName = row[8] ? row[8].trim() : ''; // Right now this is the only one we use
+	    var userEmail = row[2] ? row[2].trim() : ''; 
+	    var courseStatus = row[15] ? row[15].trim() : '';
+
+	    if (userEmail) {
+     		// Increment count for this email or initialize count to 1 if it's the first occurrence
+			emailCounts[userEmail] = (emailCounts[userEmail] || 0) + 1;
+		}
+
+		return assessmentName !== programFilter; // and we use it here to filter
+		
+	});
+
+	var filteredAndCompletedRows = filteredRows.filter(function(row){
+		var userEmail = row[2] ? row[2].trim() : ''; 
+	    var courseStatus = row[15] ? row[15].trim() : '';
+
+		// Return rows where emailCount is 1 or emailCount is > 1 and courseStatus is "Completed"
+		return emailCounts[userEmail] === 1 || (emailCounts[userEmail] > 1 && courseStatus === "Completed");
+	});
+		
+	console.log(emailCounts);
+
+	// csv being reconstructed in the quoteArrays function
+	var quotedRows = quoteArrays(filteredAndCompletedRows);
+	var finalCsvContent = headerRow + '\n' + quotedRows;
+	
+	return finalCsvContent;
+}
 
   
 
@@ -629,27 +629,23 @@ function filterAndSave(){
 
 
 function superSave() {
-        var table = document.getElementById('superCsvTable');
+	var table = document.getElementById('superCsvTable');
 
-        // Extract the header row
-        var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
-            return cell.textContent;
-        }).join(',');
+	// Extract the header row
+	var headerRow = Array.from(table.rows[0].cells).map(function(cell) {
+		return cell.textContent;
+	}).join(',');
 
-        
+    
+	// Convert sorted table back to CSV and display it
+	var csvContent = Array.from(table.rows).map(function(row) {
+		return Array.from(row.cells).map(function(cell) {
+			return '"' + cell.textContent.replace(/[\r\n]+/g, '').replace(/"/g, '""') + '"'; // Quote and remove newline characters
+		}).join(',');
+	}).join('\n');
 
-        // Convert sorted table back to CSV and display it
-        var csvContent = Array.from(table.rows).map(function(row) {
-        return Array.from(row.cells).map(function(cell) {
-            return '"' + cell.textContent.replace(/[\r\n]+/g, '').replace(/"/g, '""') + '"'; // Quote and remove newline characters
-        }).join(',');
-    }).join('\n');
-
-        
-        //var finalCsvContent = headerRow + '\n' + csvContent;
-
-        createBlobAndDownload(csvContent, 'superteam_info.csv');
-    }
+	createBlobAndDownload(csvContent, 'superteam_info.csv');
+}
 
 
 /* For program filtering */
