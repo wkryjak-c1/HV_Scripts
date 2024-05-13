@@ -276,6 +276,7 @@ function filterDataByRegistrationDate(daysSinceEpoch) {
     return globalJson.filter(function(item) {
         // Convert the "Registration Date" field to match the format of registrationDate for comparison
         //var itemRegistrationDate = new Date(item["Registration Date"]); // Convert to milliseconds since epoch
+        console.log("Can you see me?");
         var itemRegistrationDate = excelSerialToUnix(item["Registration Date"])
         //console.log("Item Registration Date", itemRegistrationDate);
     	//console.log("Type of selected option:", typeof itemRegistrationDate);
